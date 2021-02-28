@@ -1,0 +1,53 @@
+body{
+    background-color: #e0f2f1;
+}
+
+.navbar {
+  background-color: #008b78; 
+  color:white;
+}
+
+.navbar a {
+  color: white;
+}
+
+.sub-nav, .sub-nav a {
+  font-size: 3vh;
+  color: black;
+  background-color: #e0f2f1;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+h1 {
+  font: "Aileron Heavy";
+  color: white;
+  font-weight: 1000;
+  font-size: 80;
+}
+
+.highlight {
+  font: "Aileron Heavy";
+  color: white;
+  background-color: #f8a347;
+  margin: 5px;
+  padding: 10px;
+}
+
+a {
+  text-decoration: None;
+  color: #f8a347;
+}
+
+.flex-column {
+  background-color: #008b78; 
+  justify-content: unset;
+}
+.flex-column * {
+  width: 100%;
+  padding-left: 10px;
+  font-size: 16;
+}

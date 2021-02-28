@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Registration</title>
+</head>
+<body>
+  <body>
+    <h1>Hello {{ name }} please register your face</h1>
+    <h2>Please turn your face to left and to right SLOWLY. And hit done button after that</h2>
+    <img src="{% url 'face_core:add_face_src' %}">
+    <form method="GET" action="">
+      <input type="submit" value="Done"/>
+    </form>
+  </body>
+    
+</body>
+</html>
