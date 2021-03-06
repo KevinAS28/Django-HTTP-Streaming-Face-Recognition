@@ -2,10 +2,12 @@ import cv2
 import json
 import numpy as np
 import os
+from threading import Thread
+import time
 
 class VideoCamera(object):
 
-    def __init__(self, FRGraph, aligner, extract_features, face_detect, name="Your Name", done_img="done.png"):
+    def __init__(self, cam_num, FRGraph, aligner, extract_features, face_detect, name="Your Name", done_img="done.png"):
         # Using OpenCV to capture from device 0. If you have trouble capturing
         # from a webcam, comment the line below out and use a video file
         # instead.
@@ -16,7 +18,8 @@ class VideoCamera(object):
 
         self.person_imgs = {"Left" : [], "Right": [], "Center": []};
         self.person_features = {"Left" : [], "Right": [], "Center": []};
-        self.video = cv2.VideoCapture(2)
+        self.cam_num = cam_num
+        self.video = cv2.VideoCapture(cam_num)
 
         self.face_center_detected = 0
         self.face_right_detected = 0
@@ -26,13 +29,39 @@ class VideoCamera(object):
 
         self.done_img = open(os.path.join("static", "img", done_img), "rb").read()
         self.done = False
-
+        
         self.frame_count_done = 20
+
+        self.check = 0
+        self.check_before = 0
+
+        self.saved = 0
+
+        Thread(target=self.self_check).start()
         # If you decide to use video.mp4, you must have this file in the folder
         # as the main.py.
         # self.video = cv2.VideoCapture('video.mp4')
     
+    def self_check(self, seconds=5):
+        print(f'Self check for camera {self.cam_num} started.')
+        while not self.done:
+            if self.check_before == self.check:
+                print(f'Camera {self.cam_num} not active (check = {self.check})? Wait {seconds} seconds...')
+                time.sleep(seconds)
+                if self.check_before == self.check:
+                    print(f'Not used in {seconds}: Stopping camera {self.cam_num}...')
+                    self.done = True
+                    print("calling __del__ from self_check...")
+                    self.__del__()
+                    break
+            else:
+                self.check_before = self.check
+            time.sleep(0.5)
+
     def save(self):
+        if self.saved > 0:
+            print(f'self.saved = {self.saved}, skipping save')
+            
         f = open('./facerec_128D.txt','r+');
         data_set = json.loads(f.read());
 
@@ -42,12 +71,18 @@ class VideoCamera(object):
         f = open('./facerec_128D.txt', 'w+');
         f.write(json.dumps(data_set))
 
+        self.saved += 1
         print(f'Saved! {self.name}')
 
     def __del__(self):
+        print('__del__ called...')
+
+        self.done = True
+
         self.save()
 
         self.video.release()
+        # super().__del__
     
     def get_frame(self):
         if self.done:
@@ -55,6 +90,8 @@ class VideoCamera(object):
         if (self.face_right_detected>=self.frame_count_done) and (self.face_left_detected>=self.frame_count_done) and (self.face_center_detected>=self.frame_count_done):
             # print("Done")
             self.done = True
+            print('calling __del__ from get_frame...')
+            self.__del__()
             return self.done_img
 
             # ret, jpeg = cv2.imencode('.jpg', self.done_img)
@@ -90,10 +127,14 @@ class VideoCamera(object):
         return jpeg.tobytes()
 
 def generate_frames(request, camera):
-    while not camera.done:
+    while True:            
         frame = camera.get_frame()
         if frame==None:
             break
         
         vid =  (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
         yield vid
+
+        if camera.done:
+            break
+    

@@ -114,14 +114,14 @@ The above copyright notice and this permission notice shall be included in all c
           <div class="card-header card-header-warning">
             <h4 class="card-title">Face Recognition</h4>
           </div>
-          <div class="row">
+          <div class="row" id="face_recognition" >
             <div class="col-md-12">
               <div class="card-body">
                 <div class="iframe-container d-none d-lg-block">
                   <div class="col-md-8 ml-auto mr-auto">
                     <div class="card card-profile">
                       <div class="card">
-                      <img src="{% url 'face_core:add_face_src' %}?code={{face_code}}"></img>
+                      <img src="{% url 'face_core:add_face_src' %}?code={{face_code}}" ></img>
                       </div>
                    </div>
                   </div>
@@ -162,12 +162,12 @@ The above copyright notice and this permission notice shall be included in all c
             </div>
           </div>
 
-          <div class="row" id="success" hidden=true>
+          <div class="row" id="success" style='visibility: hidden;'>
             <div class="col-md-8 ml-auto mr-auto">
               <div class="card card-profile">
                 <div class="card-body">
                   <h5 class="card-category text-gray">FACE RECOGNITION</h5>
-                  <h2 class="card-description text-success">SUCCESS</h2>
+                  <h2 class="card-description text-success" id="success-text">SUCCESS</h2>
                   <a href=".\user.html" class="btn btn-success">Finish</a>
                 </div>
               </div>
@@ -413,40 +413,54 @@ The above copyright notice and this permission notice shall be included in all c
       // Javascript method's body can be found in assets/js/demos.js
       md.initDashboardPageCharts();
 
-    });
+      document.getElementById("success").style.visibility='hidden';
+      document.getElementById("face_recognition").style.visibility='visible';
+
+      function hitAPI(){
+        var face_code = {code: {{face_code}} , token_id: {{token_id}} };
+            $.ajax({
+          url: "{% url 'face_core:check_add_face' %}",
+          type: "POST",
+          data: JSON.stringify(face_code),
+          contentType: "application/json",
+          dataType: 'json',
+          success: function(response){
+            //result = JSON.parse(response);
+            var result = response;
+            console.log(result);
+            if ((result['left']!=-1)||(result['left']!='-1')){
+              $("#left_percent").html(result['left']);
+              $("#center_percent").html(result['center']);
+              $("#right_percent").html(result['right']);
+            }
+
+            console.log(result['done']);
+            if (result['done']=='fail'){
+              document.getElementById("success-text").innerHTML = "FAILED! Maybe no cam availble?";
+            }
+
+            else if ((result['done']==true) || (result['done']=='True') || ((result['right']=='100%') && (result['center']=='100%') && (result['left']=='100%'))){
+              console.log('DONE!')
+              document.getElementById("success").style.visibility='visible';
+              // document.getElementById("face_recognition").style.visibility='hidden';
+              document.getElementById("face_recognition").remove();
+
+            }else{
+              setTimeout(function() {
+                  hitAPI();
+              }, 500);              
+            }
+
+          }
+        });
+      }
+      hitAPI();          
+      });
   </script>
 </body>
 
 <script>
-    function hitAPI(){
-      var face_code = {code: {{face_code}} };
-          $.ajax({
-        url: "{% url 'face_core:check_add_face' %}",
-        type: "POST",
-        data: JSON.stringify(face_code),
-        contentType: "application/json",
-        dataType: 'json',
-        success: function(response){
-          //result = JSON.parse(response);
-          var result = response;
-          console.log(result);
-          if ((result['left']!=-1)||(result['left']!='-1')){
-            $("#left_percent").html(result['left']);
-            $("#center_percent").html(result['center']);
-            $("#right_percent").html(result['right']);
-          }
 
-          console.log(result['done']);
-          if ((result['done']==true) || (result['done']=='True')){
-            document.getElementById("success").hidden=false;
-          }
-          setTimeout(function() {
-              hitAPI();
-          }, 2000);
-        }
-      });
-    }
-    hitAPI();    
 
 
 
