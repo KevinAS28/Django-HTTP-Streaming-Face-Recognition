@@ -16,7 +16,7 @@ class VideoCamera(object):
 
         self.person_imgs = {"Left" : [], "Right": [], "Center": []};
         self.person_features = {"Left" : [], "Right": [], "Center": []};
-        self.video = cv2.VideoCapture(0)
+        self.video = cv2.VideoCapture(2)
 
         self.face_center_detected = 0
         self.face_right_detected = 0
@@ -26,6 +26,8 @@ class VideoCamera(object):
 
         self.done_img = open(os.path.join("static", "img", done_img), "rb").read()
         self.done = False
+
+        self.frame_count_done = 20
         # If you decide to use video.mp4, you must have this file in the folder
         # as the main.py.
         # self.video = cv2.VideoCapture('video.mp4')
@@ -50,7 +52,7 @@ class VideoCamera(object):
     def get_frame(self):
         if self.done:
             return None
-        if (self.face_right_detected>=20) and (self.face_left_detected>=20) and (self.face_center_detected>=20):
+        if (self.face_right_detected>=self.frame_count_done) and (self.face_left_detected>=self.frame_count_done) and (self.face_center_detected>=self.frame_count_done):
             # print("Done")
             self.done = True
             return self.done_img

@@ -13,14 +13,15 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.contrib.auth import views as auth_views
-
+from .views import static_serve
 
 urlpatterns = [
     path('face_core/',include('face_core.urls', namespace='face_core'),name='face_core'),  
+    re_path(r'^staticfiles/(?P<path>.+)/$', static_serve, name="test_frontend"),
 ]
 
 urlpatterns += staticfiles_urlpatterns()
