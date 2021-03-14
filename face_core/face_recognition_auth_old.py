@@ -7,12 +7,6 @@ import numpy as np
 from django.conf import settings
 
 def findPeople(features_arr, positions, face_data, thres = 0.6, percent_thres = 80):
-    '''
-    :param features_arr: a list of 128d Features of all faces on screen
-    :param positions: a list of face position types of all faces on screen
-    :param thres: distance threshold
-    :return: person name and percentage
-    '''
     f = open(face_data,'r')
     data_set = json.loads(f.read())
 
@@ -92,26 +86,6 @@ class VideoCamera(object):
                 cv2.rectangle(frame,(rect[0],rect[1]),(rect[0] + rect[2],rect[1]+rect[3]),(0,255,0),2) #draw bounding box for the face
                 cv2.putText(frame,recog_data[i][0]+" - "+str(recog_data[i][1])+"%",(rect[0],rect[1]),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),1,cv2.LINE_AA)
                 print(recog_data[i][0], recog_data[i][1])
-                # for rollno, name in self.names.items():   
-                #     if name == recog_data[i][0]:
-                #         for i in range(1):
-                #             print(str(recog_data))
-                #             return 
-                #             # vs.release()
-                #             # cv2.destroyAllWindows()
-                #             # os.system('python auth1.py')
-
-                #             # vs.release()
-                #             # cv2.destroyAllWindows()
-                #             # vs.release() # camera release 
-                #             # cv2.destroyAllWindows() 
-                #     else:
-                #         pass 
-            
-        # cv2.imshow("Capturing Face",frame)
-        # key = cv2.waitKey(1) & 0xFF
-        # if key == 27 or key == ord("q"):
-        #     break
 
 
         ret, jpeg = cv2.imencode('.jpg', frame)

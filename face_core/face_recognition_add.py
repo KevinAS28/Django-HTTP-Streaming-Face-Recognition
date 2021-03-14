@@ -7,7 +7,7 @@ import time
 
 class VideoCamera(object):
 
-    def __init__(self, cam_num, FRGraph, aligner, extract_features, face_detect, name="Your Name", done_img="done.png"):
+    def __init__(self, cam_num, FRGraph, aligner, extract_features, face_detect, done_img="done.png", name="Your Name", additional_data = dict()):
         # Using OpenCV to capture from device 0. If you have trouble capturing
         # from a webcam, comment the line below out and use a video file
         # instead.
@@ -38,6 +38,9 @@ class VideoCamera(object):
         self.saved = 0
 
         Thread(target=self.self_check).start()
+
+        self.additional_data = additional_data
+        
         # If you decide to use video.mp4, you must have this file in the folder
         # as the main.py.
         # self.video = cv2.VideoCapture('video.mp4')

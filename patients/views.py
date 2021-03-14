@@ -20,7 +20,7 @@ from align_custom import AlignCustom
 from face_feature import FaceFeature
 from mtcnn_detect import MTCNNDetect
 from tf_graph import FaceRecGraph
-import camera_auth, camera_add
+import camera_auth, face_recognition_add
 
 
 #### Facial Recognition Functions
@@ -62,7 +62,7 @@ def tester(request):
 def add_face_src(request):
     # print("add_face_src: ", request.session["email"])
     request.session["email"] = "test@mail.com"
-    frames = gen(request, camera_add.VideoCamera(FRGraph, aligner, extract_feature, face_detect, name=request.session["email"]))
+    frames = gen(request, face_recognition_add.VideoCamera(FRGraph, aligner, extract_feature, face_detect, name=request.session["email"]))
     return StreamingHttpResponse(frames, content_type='multipart/x-mixed-replace; boundary=frame')
 
 
