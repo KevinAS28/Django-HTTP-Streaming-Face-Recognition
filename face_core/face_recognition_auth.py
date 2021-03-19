@@ -28,7 +28,7 @@ def findPeople(features_arr, positions, face_data, thres = 0.6, percent_thres = 
     return returnRes
 
 
-def compare_face(features_arr0, positions0, face1, name1, thres = 0.6, percent_thres = 80):
+def compare_face(features_arr0, positions0, face1, name1, thres = 0.6):
     returnRes = []
     for (i,features_128D) in enumerate(features_arr0):
         smallest = sys.maxsize
@@ -44,7 +44,7 @@ def compare_face(features_arr0, positions0, face1, name1, thres = 0.6, percent_t
 
 class VideoCamera(object):
 
-    def __init__(self, cam_num, FRGraph, aligner, extract_features, face_detect, data_face1, name1='KevinAS28', done_img="done.png", additional_data = dict()):
+    def __init__(self, cam_num, FRGraph, aligner, extract_features, face_detect, data_face1, auth_success_function=lambda cam: cam, minimum_percentage=0.8, name1='KevinAS28', done_img="done.png", additional_data = dict()):
         # Using OpenCV to capture from device 0. If you have trouble capturing
         # from a webcam, comment the line below out and use a video file
         # instead.
@@ -58,23 +58,31 @@ class VideoCamera(object):
         self.cam_num = cam_num
         self.video = cv2.VideoCapture(cam_num)
 
-        self.data_face = data_face1
+        self.data_face1 = data_face1
         self.name1 = name1
+        self.minimum_percentage = minimum_percentage
 
         self.done_img = open(os.path.join("static", "img", done_img), "rb").read()
         self.done = False
-        
+
+        self.auth_success_function = auth_success_function
+
         self.frame_count_done = 20
 
         self.check = 0
         self.check_before = 0
 
         self.saved = 0
+        self.success_point = 0
+        self.accuracies = []
+        self.minimum_success_point = 30
 
         Thread(target=self.self_check).start()
 
         self.additional_data = additional_data
         
+        self.done_data = None
+        self.authenticated = False
         # If you decide to use video.mp4, you must have this file in the folder
         # as the main.py.
         # self.video = cv2.VideoCapture('video.mp4')
@@ -103,9 +111,19 @@ class VideoCamera(object):
         self.video.release()
         # super().__del__
     
+    def auth_success(self, name, percentage):
+        print(f'Face auth success with {percentage}')
+        self.done = True
+        self.authenticated = True
+        self.video.release()
+        self.done_data = [name, percentage]
+        self.auth_success_function(self)
+
     def get_frame(self):
-        if self.done:
-            return self.done_img            
+        if (self.done) or (self.success_point >= self.minimum_success_point):
+            time.sleep(2)
+            self.auth_success(self.name1, sum(self.accuracies)/len(self.accuracies))
+            return self.done_img
 
         success, frame = self.video.read()
         
@@ -123,12 +141,14 @@ class VideoCamera(object):
         
         if(len(aligns) > 0):
             features_arr = self.extract_feature.get_features(aligns)
-            recog_data = compare_face(features_arr,positions, face1=self.face1, name1=self.name1, percent_thres=self.percent_thres)
+            recog_data = compare_face(features_arr,positions, face1=self.data_face1, name1=self.name1)
             for (i,rect) in enumerate(rects):
                 cv2.rectangle(frame,(rect[0],rect[1]),(rect[0] + rect[2],rect[1]+rect[3]),(0,255,0),2) #draw bounding box for the face
                 cv2.putText(frame,recog_data[i][0]+" - "+str(recog_data[i][1])+"%",(rect[0],rect[1]),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),1,cv2.LINE_AA)
                 print(recog_data[i][0], recog_data[i][1])
-
+                if (recog_data[i][1] > self.minimum_percentage):
+                    self.success_point += 1
+                    self.accuracies.append(recog_data[i][1])
         
         # cv2.putText(frame,recog_data[i][0]+" - "+str(recog_data[i][1])+"%",(rect[0],rect[1]),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),1,cv2.LINE_AA)
 
