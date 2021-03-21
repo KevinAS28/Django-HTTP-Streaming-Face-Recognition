@@ -60,7 +60,7 @@ def load_model():
   aligner = AlignCustom()
   extract_feature = FaceFeature(FRGraph)
   face_detect = MTCNNDetect(FRGraph, scale_factor=2)
-  print("\n\nDone\n\n")
+  print("\n\nFace authentication module loaded\n\n")
 
 Thread(target=load_model).start()
 
@@ -112,6 +112,7 @@ def auth_face(request):
 
         default_params = {
             'user_id': 'KevinAS28',
+            'name': 'Name: KevinAS28',
             'success_url': '/face_core/auth_face',
             'send_data_only_url': '/face_core/auth_face',
         }
@@ -125,7 +126,7 @@ def auth_face(request):
             camera_id = int(camera_avail[-1])
 
             try:
-                camera_used[camera_id] = face_recognition_auth.VideoCamera(camera_id, FRGraph, aligner, extract_feature, face_detect, data_face1=data_set[default_params['user_id']], auth_success_function=auth_succcess_function, additional_data=params)
+                camera_used[camera_id] = face_recognition_auth.VideoCamera(camera_id, FRGraph, aligner, extract_feature, face_detect, data_face1=data_set[params['user_id']], name1=params['name'] ,auth_success_function=auth_succcess_function, additional_data=params)
                 del camera_avail[-1]
             except NameError:
                 return HttpResponseBadRequest('Face recognition module not ready yet, please wait some moment')

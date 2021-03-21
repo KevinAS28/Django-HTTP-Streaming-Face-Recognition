@@ -60,7 +60,7 @@ def load_model():
   aligner = AlignCustom()
   extract_feature = FaceFeature(FRGraph)
   face_detect = MTCNNDetect(FRGraph, scale_factor=2)
-  print("\n\nDone\n\n")
+  print("\n\nFace add module loaded\n\n")
 
 Thread(target=load_model).start()
 
@@ -72,7 +72,7 @@ def detect_camera(seconds=1):
             if (cv2.VideoCapture(i).read()[0]):
                 camera_avail.append(i)
         # camera_avail = camera_avail[::-1]
-        camera_avail = [0]
+        camera_avail = [2]
         
     __detect()
     print('List camera availble: ', camera_avail)
@@ -158,7 +158,12 @@ def add_face(request):
             request.session = dict_to_session(json.loads(params['session']))
 
             params_face = copy(params)
-            params_face['person_face_data'] = json.dumps(json.loads(open('./facerec_128D.txt','r+').read())[params['user_id']])
+            face_data = json.dumps(json.loads(open('./facerec_128D.txt','r+').read()))
+
+            try:
+                params_face['person_face_data'] = face_data[params['user_id']]
+            except:
+                print(f'Warning: face_data for {params["user_id"]} not found')
 
             r = requests.post(url=params['send_data_only_url'] , data=params_face)
             # print(f'Response from {params["send_data_only_url"]}: {r.status_code} : {r.content}')
